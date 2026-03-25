@@ -125,7 +125,7 @@
       <div class="loading">
         <div class="spinner"></div>
         <p>Изучаю ваше задание...</p>
-        <span>Обычно это занимает 3-7 секунд</span>
+        <span id="loadingStatus">Сжимаю изображение и отправляю...</span>
       </div>
     </div>
 
@@ -159,7 +159,7 @@
 
 <script>
 const STORAGE_KEY = 'school_gemini_key_v2';
-let imgBase64 = null, imgType = null;
+let imgBase64 = null, imgType = 'image/jpeg';
 
 function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
 
@@ -192,20 +192,64 @@ function updateBanner() {
   document.getElementById('keyBtn').textContent = hasKey ? '⚙️ Настройки' : '🔑 Ключ';
 }
 
-function handleFile(e) {
+// Функция сжатия изображения
+async function resizeImage(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 1200; // Оптимальный размер для распознавания текста
+
+        if (width > height) {
+          if (width > maxDim) {
+            height *= maxDim / width;
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width *= maxDim / height;
+            height = maxDim;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // Сжимаем в JPEG с качеством 0.7
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(dataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
   
-  const reader = new FileReader();
-  reader.onload = ev => {
-    imgType = file.type || 'image/jpeg';
-    imgBase64 = ev.target.result.split(',')[1];
-    const zone = document.getElementById('uploadZone');
-    zone.innerHTML = `<img src="${ev.target.result}" alt="Preview">`;
+  const zone = document.getElementById('uploadZone');
+  zone.innerHTML = `<p>Обработка фото...</p>`;
+  
+  try {
+    const resizedDataUrl = await resizeImage(file);
+    imgBase64 = resizedDataUrl.split(',')[1];
+    imgType = 'image/jpeg';
+    
+    zone.innerHTML = `<img src="${resizedDataUrl}" alt="Preview">`;
     zone.classList.add('has-image');
     document.getElementById('solveBtn').disabled = false;
-  };
-  reader.readAsDataURL(file);
+  } catch (err) {
+    alert('Ошибка при обработке фото: ' + err.message);
+    reset();
+  }
 }
 
 function show(id) {
@@ -229,6 +273,8 @@ async function solve() {
   if (!key) { openApiModal(); return; }
   
   show('screenLoading');
+  const statusLabel = document.getElementById('loadingStatus');
+  statusLabel.innerText = "Распознаю текст и решаю...";
 
   const prompt = `Ты — профессиональный школьный репетитор. 
 Изучи изображение и реши задание.
@@ -242,9 +288,12 @@ async function solve() {
 }`;
 
   try {
-    // Используем gemini-1.5-flash как самую стабильную для бесплатных ключей
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
     
+    // Добавляем таймаут для запроса
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 35000); // 35 секунд
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -259,17 +308,21 @@ async function solve() {
           temperature: 0.1,
           response_mime_type: "application/json"
         }
-      })
+      }),
+      signal: controller.signal
     });
 
+    clearTimeout(timeoutId);
     const result = await response.json();
 
     if (!response.ok) {
-      throw new Error(result.error?.message || 'Неизвестная ошибка API');
+      if (response.status === 429) throw new Error('Слишком много запросов. Подождите минуту.');
+      if (response.status === 400) throw new Error('Ошибка ключа или формата данных.');
+      throw new Error(result.error?.message || 'Ошибка сервера Google');
     }
 
     const jsonString = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!jsonString) throw new Error('Нейросеть не смогла прочитать изображение. Попробуйте сделать фото четче.');
+    if (!jsonString) throw new Error('Нейросеть не смогла разобрать фото. Попробуйте сделать снимок светлее и четче.');
 
     const data = JSON.parse(jsonString);
     renderResult(data);
@@ -278,9 +331,12 @@ async function solve() {
   } catch (err) {
     console.error(err);
     show('screenError');
+    let msg = err.message;
+    if (err.name === 'AbortError') msg = 'Время ожидания вышло. Возможно, плохой интернет.';
     document.getElementById('errorText').innerHTML = `
       <strong>Ошибка выполнения</strong>
-      ${err.message.includes('API key not valid') ? 'Неверный API ключ. Проверьте настройки.' : err.message}
+      ${msg}<br><br>
+      <small>Совет: проверьте интернет или попробуйте сменить API ключ.</small>
     `;
   }
 }
@@ -303,7 +359,7 @@ function renderResult(data) {
     
     <div class="task-box">
       <div class="task-label">Текст задания</div>
-      <div class="task-text">${data.task || 'Не удалось распознать текст'}</div>
+      <div class="task-text">${data.task || 'Текст не распознан'}</div>
     </div>
 
     <div class="solution-title">📝 Пошаговое решение</div>
@@ -311,17 +367,17 @@ function renderResult(data) {
 
     <div class="answer-box">
       <div class="answer-label">Итоговый ответ</div>
-      <div class="answer-text">${data.answer || 'См. решение выше'}</div>
+      <div class="answer-text">${data.answer || 'Готово'}</div>
     </div>
 
     <div class="divider"></div>
-    <div class="gdz-section-title">Проверить в ГДЗ</div>
+    <div class="gdz-section-title">Проверить решение</div>
     
     <a href="https://www.google.com/search?q=ГДЗ+${query}" target="_blank" class="gdz-link">
       <span class="gdz-link-icon">🔍</span>
       <div class="gdz-link-text">
-        <strong>Поиск Google</strong>
-        <span>Найти готовые ответы в сети</span>
+        <strong>Поиск в Google</strong>
+        <span>Найти аналогичные задания онлайн</span>
       </div>
     </a>
   `;
