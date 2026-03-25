@@ -10,9 +10,14 @@
   .app { max-width: 480px; margin: 0 auto; padding: 0 0 2rem; min-height: 100vh; background: #fff; }
 
   .header { background: #185FA5; color: #fff; padding: 1.2rem 1.25rem; display: flex; align-items: center; gap: 10px; }
+  .header-left { display: flex; align-items: center; gap: 10px; flex: 1; }
   .header h1 { font-size: 18px; font-weight: 600; }
   .header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
-  .header-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .header-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+
+  .key-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; transition: background 0.2s; flex-shrink: 0; }
+  .key-btn:hover { background: rgba(255,255,255,0.25); }
+  .key-btn.has-key { background: rgba(255,255,255,0.1); }
 
   .api-banner { background: #FFF3CD; border-bottom: 1px solid #FFD700; padding: 10px 1.25rem; font-size: 13px; color: #856404; display: flex; align-items: center; gap: 8px; }
   .api-banner a { color: #185FA5; cursor: pointer; text-decoration: underline; }
@@ -83,17 +88,21 @@
   .modal-btns button { flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
   .modal-cancel { background: #f0f0f0; color: #333; }
   .modal-save { background: #185FA5; color: #fff; }
+  .modal-delete { background: #FCEBEB; color: #A32D2D; }
 </style>
 </head>
 <body>
 
 <div class="app">
   <div class="header">
-    <div class="header-icon">📚</div>
-    <div>
-      <h1>Помощник школьника</h1>
-      <p>Любой предмет · Любой класс</p>
+    <div class="header-left">
+      <div class="header-icon">📚</div>
+      <div>
+        <h1>Помощник школьника</h1>
+        <p>Любой предмет · Любой класс</p>
+      </div>
     </div>
+    <button class="key-btn" id="keyBtn" onclick="openApiModal()">🔑 API ключ</button>
   </div>
 
   <div class="api-banner" id="apiBanner">
@@ -138,6 +147,7 @@
     <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeApiModal()">Отмена</button>
+      <button class="modal-delete" id="deleteKeyBtn" onclick="deleteApiKey()" style="display:none;">Удалить</button>
       <button class="modal-save" onclick="saveApiKey()">Сохранить</button>
     </div>
   </div>
@@ -149,18 +159,56 @@ let currentImageBase64 = null;
 let currentImageType = null;
 
 function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
-function openApiModal() { document.getElementById('apiModal').classList.add('open'); setTimeout(() => document.getElementById('apiKeyInput').focus(), 100); }
+
+function openApiModal() {
+  const existing = getApiKey();
+  const input = document.getElementById('apiKeyInput');
+  const deleteBtn = document.getElementById('deleteKeyBtn');
+  // If key exists, show masked version and show delete button
+  if (existing) {
+    input.placeholder = existing.slice(0, 10) + '...' + existing.slice(-4);
+    input.value = '';
+    deleteBtn.style.display = 'block';
+  } else {
+    input.placeholder = 'sk-ant-api03-...';
+    input.value = '';
+    deleteBtn.style.display = 'none';
+  }
+  document.getElementById('apiModal').classList.add('open');
+  setTimeout(() => input.focus(), 100);
+}
+
 function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
+
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { closeApiModal(); return; } // nothing typed — just close
   if (!key.startsWith('sk-')) { alert('Ключ должен начинаться с sk-'); return; }
   localStorage.setItem(API_KEY_STORAGE, key);
   closeApiModal();
   updateBanner();
 }
+
+function deleteApiKey() {
+  if (confirm('Удалить API ключ?')) {
+    localStorage.removeItem(API_KEY_STORAGE);
+    closeApiModal();
+    updateBanner();
+  }
+}
+
 function updateBanner() {
   const banner = document.getElementById('apiBanner');
-  if (getApiKey()) { banner.style.display = 'none'; } else { banner.style.display = 'flex'; }
+  const keyBtn = document.getElementById('keyBtn');
+  if (getApiKey()) {
+    banner.style.display = 'none';
+    keyBtn.textContent = '🔑 Сменить ключ';
+    keyBtn.classList.add('has-key');
+  } else {
+    banner.style.display = 'flex';
+    keyBtn.textContent = '🔑 API ключ';
+    keyBtn.classList.remove('has-key');
+  }
 }
 
 function handleFile(e) {
@@ -307,7 +355,7 @@ async function solve() {
     renderResult(parsed);
   } catch (err) {
     show('screenError');
-    document.getElementById('errorText').innerHTML = `<strong>Ошибка:</strong> ${err.message}<br><br>Проверь правильность API ключа и попробуй снова.`;
+    document.getElementById('errorText').innerHTML = `<strong>Ошибка:</strong> ${err.message}<br><br>Проверь правильность API ключа и попробуй снова. <a style="color:#185FA5;cursor:pointer;" onclick="openApiModal()">Сменить ключ →</a>`;
   }
 }
 
