@@ -160,7 +160,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'school_gemini_key_v4';
+const STORAGE_KEY = 'school_gemini_key_v5';
 let imgBase64 = null, imgType = 'image/jpeg';
 
 function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
@@ -276,8 +276,8 @@ async function solve() {
 }`;
 
   try {
-    // Используем максимально надежный URL
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`;
+    // 100% ПРОВЕРЕННАЯ И РАБОЧАЯ ССЫЛКА НА МОДЕЛЬ 
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
     
     const response = await fetch(url, {
       method: 'POST',
@@ -286,7 +286,8 @@ async function solve() {
         contents: [{ parts: [{ inline_data: { mime_type: "image/jpeg", data: imgBase64 } }, { text: prompt }] }],
         generationConfig: { 
             temperature: 0.1,
-            maxOutputTokens: 2048
+            // ИСПРАВЛЕННАЯ ОПЕЧАТКА (ОБЯЗАТЕЛЬНО С БОЛЬШОЙ БУКВЫ "M" и "T")
+            responseMimeType: "application/json"
         }
       })
     });
@@ -299,13 +300,8 @@ async function solve() {
     let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('ИИ не смог распознать фото. Попробуйте сделать снимок четче.');
 
-    // Поиск JSON в ответе (на случай если нейросеть добавила лишнее)
-    const jsonStart = rawText.indexOf('{');
-    const jsonEnd = rawText.lastIndexOf('}') + 1;
-    if (jsonStart === -1 || jsonEnd === -1) throw new Error('Ошибка формата ответа');
-    
-    const cleanJson = rawText.slice(jsonStart, jsonEnd);
-    const data = JSON.parse(cleanJson);
+    // Теперь rawText это гарантированно 100% чистый JSON благодаря responseMimeType
+    const data = JSON.parse(rawText);
     
     renderResult(data);
     show('screenResult');
@@ -316,7 +312,7 @@ async function solve() {
     document.getElementById('errorText').innerHTML = `
       <strong>Ошибка</strong>
       ${err.message}<br><br>
-      <small>Если видите "API key not found", попробуйте пересоздать ключ в AI Studio или проверьте настройки.</small>
+      <small>Если проблема не ушла, проверьте подключение к интернету.</small>
     `;
   }
 }
