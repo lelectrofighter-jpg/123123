@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Помощник школьника 3.1</title>
+<title>Помощник школьника 2.5</title>
 <style>
-  /* Стили оставляю без изменений, как в вашем исходнике */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
   .app { max-width: 480px; margin: 0 auto; padding: 0 0 2rem; min-height: 100vh; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
@@ -30,8 +29,8 @@
   .spinner { width: 48px; height: 48px; border: 4px solid #E6F1FB; border-top-color: #185FA5; border-radius: 50%; animation: spin 1s infinite; margin: 0 auto 20px; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .subject-badge { background: #185FA5; color: #fff; font-size: 13px; padding: 5px 14px; border-radius: 20px; }
-  .task-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 20px; }
-  .answer-box { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 16px; }
+  .task-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 20px; font-size: 15px; line-height: 1.5; }
+  .answer-box { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 16px; font-size: 16px; }
   .api-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px); }
   .api-modal.open { display: flex; }
   .api-modal-box { background: #fff; border-radius: 20px; padding: 1.75rem; width: 100%; max-width: 400px; }
@@ -45,13 +44,13 @@
       <div class="header-icon">🎓</div>
       <div>
         <h1>Школьный Помощник</h1>
-        <p>ИИ решение задач (Flash-Lite 3.1)</p>
+        <p>ИИ решение задач (Gemini 2.5 Flash)</p>
       </div>
     </div>
     <button class="key-btn" id="keyBtn" onclick="openApiModal()">⚙️</button>
   </div>
 
-  <div class="free-badge">Используется сверхбыстрая модель Gemini 3.1 Flash-Lite</div>
+  <div class="free-badge">Используется стабильная модель Gemini 2.5 Flash</div>
 
   <div class="api-banner" id="apiBanner">
     ⚠️ Ключ не настроен. <a onclick="openApiModal()">Добавить ключ</a>
@@ -73,7 +72,7 @@
     <div id="screenLoading" style="display:none;">
       <div class="loading" style="text-align: center; padding: 3rem 1rem;">
         <div class="spinner"></div>
-        <p>Изучаю задание (v3.1)...</p>
+        <p>Изучаю задание (v2.5)...</p>
         <span id="loadingStatus">Обработка данных...</span>
       </div>
     </div>
@@ -139,7 +138,7 @@ function show(id) {
 
 function reset() {
   imgBase64 = null;
-  document.getElementById('uploadZone').innerHTML = `📸 <p>Загрузить фото</p>`;
+  document.getElementById('uploadZone').innerHTML = `<div class="upload-icon-wrap">📸</div><p>Загрузить фото</p>`;
   document.getElementById('solveBtn').disabled = true;
   show('screenUpload');
 }
@@ -151,37 +150,49 @@ async function solve() {
   show('screenLoading');
   
   const prompt = `Ты школьный репетитор. Реши задание на картинке. Верни результат СТРОГО в формате JSON:
-  {"subject": "предмет", "grade": "класс", "task": "текст", "steps": ["шаг 1"], "answer": "ответ"}`;
+  {"subject": "предмет", "grade": "класс", "task": "текст задания", "steps": ["шаг 1", "шаг 2"], "answer": "короткий ответ"}`;
 
   try {
-    // ОБНОВЛЕННЫЙ URL ДЛЯ GEMINI 3.1 FLASH-LITE
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${key}`;
+    // ИСПОЛЬЗУЕМ ВАШУ МОДЕЛЬ GEMINI 2.5 FLASH
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`;
     
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ inline_data: { mime_type: "image/jpeg", data: imgBase64 } }, { text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
+        generationConfig: { 
+            temperature: 0.1,
+            responseMimeType: "application/json" 
+        }
       })
     });
 
     const result = await response.json();
     if (!response.ok) throw new Error(result.error?.message || 'Ошибка API');
 
-    const data = JSON.parse(result.candidates[0].content.parts[0].text);
+    const rawText = result.candidates[0].content.parts[0].text;
+    const data = JSON.parse(rawText);
     renderResult(data);
     show('screenResult');
   } catch (err) {
-    document.getElementById('errorText').innerText = err.message;
+    document.getElementById('errorText').innerText = "Ошибка: " + err.message;
     show('screenError');
   }
 }
 
 function renderResult(data) {
+  const stepsHtml = (data.steps || []).map((s, i) => `<p style="margin-bottom:8px;">${i+1}. ${s}</p>`).join('');
   document.getElementById('resultContent').innerHTML = `
-    <div class="subject-badge">${data.subject}</div>
-    <div class="task-box">${data.task}</div>
+    <div style="margin-bottom:15px;">
+        <span class="subject-badge">${data.subject}</span>
+        <span style="background:#EAF3DE; color:#27500A; padding:5px 14px; border-radius:20px; font-size:13px; margin-left:5px;">${data.grade}</span>
+    </div>
+    <div class="task-box"><strong>Задание:</strong><br>${data.task}</div>
+    <div style="margin-bottom:20px;">
+        <h4 style="margin-bottom:10px;">📝 Решение:</h4>
+        ${stepsHtml}
+    </div>
     <div class="answer-box"><strong>Ответ:</strong> ${data.answer}</div>
   `;
 }
