@@ -72,7 +72,7 @@
   .gdz-link-text strong { font-size: 15px; color: #185FA5; display: block; }
   .gdz-link-text span { font-size: 12px; color: #64748B; }
 
-  .error-box { background: #FFF1F2; border: 1px solid #FECDD3; border-radius: 12px; padding: 16px; color: #BE123C; font-size: 14px; line-height: 1.6; margin-top: 1rem; }
+  .error-box { background: #FFF1F2; border: 1px solid #FECDD3; border-radius: 12px; padding: 16px; color: #BE123C; font-size: 14px; line-height: 1.6; margin-top: 1rem; word-break: break-word; }
   .error-box strong { display: block; margin-bottom: 4px; font-size: 16px; }
 
   .api-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px); }
@@ -103,7 +103,7 @@
     <button class="key-btn" id="keyBtn" onclick="openApiModal()">⚙️</button>
   </div>
 
-  <div class="free-badge">Используется модель Google Gemini 1.5 Flash</div>
+  <div class="free-badge">Используется умная модель Google Gemini 2.0 Flash</div>
 
   <div class="api-banner" id="apiBanner">
     ⚠️ Ключ не настроен. <a onclick="openApiModal()">Добавить ключ</a>
@@ -160,7 +160,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'school_gemini_key_v5';
+const STORAGE_KEY = 'school_gemini_key_v6';
 let imgBase64 = null, imgType = 'image/jpeg';
 
 function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
@@ -262,7 +262,7 @@ async function solve() {
   
   show('screenLoading');
   const statusLabel = document.getElementById('loadingStatus');
-  statusLabel.innerText = "Анализирую изображение...";
+  statusLabel.innerText = "Анализирую изображение (модель 2.0)...";
 
   const prompt = `Ты школьный репетитор. Реши задание на картинке. 
 Верни результат СТРОГО в формате JSON без каких-либо пояснений до и после.
@@ -276,8 +276,8 @@ async function solve() {
 }`;
 
   try {
-    // 100% ПРОВЕРЕННАЯ И РАБОЧАЯ ССЫЛКА НА МОДЕЛЬ 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+    // ВЕРНУЛИСЬ НА GEMINI 2.0 FLASH! Она точно работала у тебя изначально.
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
     
     const response = await fetch(url, {
       method: 'POST',
@@ -286,7 +286,7 @@ async function solve() {
         contents: [{ parts: [{ inline_data: { mime_type: "image/jpeg", data: imgBase64 } }, { text: prompt }] }],
         generationConfig: { 
             temperature: 0.1,
-            // ИСПРАВЛЕННАЯ ОПЕЧАТКА (ОБЯЗАТЕЛЬНО С БОЛЬШОЙ БУКВЫ "M" и "T")
+            // Этот параметр решает ту самую первую проблему с JSON форматом
             responseMimeType: "application/json"
         }
       })
@@ -294,13 +294,13 @@ async function solve() {
 
     const result = await response.json();
     if (!response.ok) {
+      // Выводим только реальную ошибку, никаких "проверьте интернет"
       throw new Error(result.error?.message || 'Ошибка API');
     }
 
     let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!rawText) throw new Error('ИИ не смог распознать фото. Попробуйте сделать снимок четче.');
 
-    // Теперь rawText это гарантированно 100% чистый JSON благодаря responseMimeType
     const data = JSON.parse(rawText);
     
     renderResult(data);
@@ -310,9 +310,8 @@ async function solve() {
     console.error(err);
     show('screenError');
     document.getElementById('errorText').innerHTML = `
-      <strong>Ошибка</strong>
-      ${err.message}<br><br>
-      <small>Если проблема не ушла, проверьте подключение к интернету.</small>
+      <strong>Ошибка API:</strong><br>
+      ${err.message}
     `;
   }
 }
