@@ -17,14 +17,15 @@
 
   .key-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; transition: background 0.2s; flex-shrink: 0; }
   .key-btn:hover { background: rgba(255,255,255,0.25); }
-  .key-btn.has-key { background: rgba(255,255,255,0.1); }
 
   .api-banner { background: #FFF3CD; border-bottom: 1px solid #FFD700; padding: 10px 1.25rem; font-size: 13px; color: #856404; display: flex; align-items: center; gap: 8px; }
   .api-banner a { color: #185FA5; cursor: pointer; text-decoration: underline; }
 
+  .free-badge { background: #EAF3DE; border-bottom: 1px solid #C0DD97; padding: 8px 1.25rem; font-size: 12px; color: #27500A; }
+
   .content { padding: 1.25rem; }
 
-  .upload-zone { border: 2px dashed #B5D4F4; border-radius: 16px; padding: 2rem 1rem; text-align: center; cursor: pointer; background: #E6F1FB; margin-bottom: 1rem; transition: all 0.2s; position: relative; overflow: hidden; }
+  .upload-zone { border: 2px dashed #B5D4F4; border-radius: 16px; padding: 2rem 1rem; text-align: center; cursor: pointer; background: #E6F1FB; margin-bottom: 1rem; transition: all 0.2s; overflow: hidden; }
   .upload-zone:hover { border-color: #185FA5; background: #d4e8f7; }
   .upload-zone.has-image { border-style: solid; padding: 0; }
   .upload-zone img { width: 100%; border-radius: 14px; display: block; max-height: 280px; object-fit: contain; }
@@ -46,7 +47,6 @@
   .loading p { font-size: 15px; color: #555; }
   .loading span { font-size: 13px; color: #aaa; margin-top: 6px; display: block; }
 
-  .result { margin-top: 0; }
   .subject-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
   .subject-badge { background: #E6F1FB; color: #0C447C; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
   .class-badge { background: #EAF3DE; color: #27500A; font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 20px; }
@@ -55,18 +55,17 @@
   .task-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
   .task-text { font-size: 15px; color: #222; line-height: 1.5; }
 
-  .solution-title { font-size: 15px; font-weight: 600; color: #222; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .solution-title { font-size: 15px; font-weight: 600; color: #222; margin-bottom: 12px; }
   .step { display: flex; gap: 12px; margin-bottom: 14px; }
   .step-num { min-width: 28px; height: 28px; background: #185FA5; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; flex-shrink: 0; }
   .step-text { font-size: 14px; color: #333; line-height: 1.6; padding-top: 4px; }
 
   .answer-box { background: #EAF3DE; border: 1px solid #C0DD97; border-radius: 12px; padding: 12px 16px; margin: 16px 0; }
-  .answer-box .answer-label { font-size: 11px; color: #3B6D11; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .answer-box .answer-text { font-size: 16px; font-weight: 600; color: #1a4a0a; }
+  .answer-label { font-size: 11px; color: #3B6D11; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .answer-text { font-size: 16px; font-weight: 600; color: #1a4a0a; }
 
   .divider { height: 1px; background: #eee; margin: 16px 0; }
-
-  .gdz-section-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+  .gdz-section-title { font-size: 13px; font-weight: 600; color: #555; margin-bottom: 10px; }
   .gdz-link { display: flex; align-items: center; gap: 10px; padding: 11px 14px; background: #f9f9f9; border: 1px solid #e8e8e8; border-radius: 10px; margin-bottom: 8px; text-decoration: none; color: inherit; transition: background 0.15s; }
   .gdz-link:hover { background: #f0f0f0; }
   .gdz-link-icon { font-size: 20px; }
@@ -81,7 +80,8 @@
   .api-modal.open { display: flex; }
   .api-modal-box { background: #fff; border-radius: 16px; padding: 1.5rem; width: 100%; max-width: 400px; }
   .api-modal-box h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
-  .api-modal-box p { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.5; }
+  .api-modal-box p { font-size: 13px; color: #555; margin-bottom: 16px; line-height: 1.7; }
+  .api-modal-box a { color: #185FA5; font-weight: 600; }
   .api-modal-box input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; font-family: monospace; margin-bottom: 12px; }
   .api-modal-box input:focus { outline: none; border-color: #185FA5; }
   .modal-btns { display: flex; gap: 8px; }
@@ -92,7 +92,6 @@
 </style>
 </head>
 <body>
-
 <div class="app">
   <div class="header">
     <div class="header-left">
@@ -104,6 +103,8 @@
     </div>
     <button class="key-btn" id="keyBtn" onclick="openApiModal()">🔑 API ключ</button>
   </div>
+
+  <div class="free-badge">✅ Бесплатно · Google Gemini · 1500 запросов/день</div>
 
   <div class="api-banner" id="apiBanner">
     ⚠️ API ключ не задан. <a onclick="openApiModal()">Нажми чтобы добавить</a>
@@ -129,7 +130,7 @@
     </div>
 
     <div id="screenResult" style="display:none;">
-      <div class="result" id="resultContent"></div>
+      <div id="resultContent"></div>
       <button class="btn btn-secondary" onclick="reset()">← Новое задание</button>
     </div>
 
@@ -142,9 +143,14 @@
 
 <div class="api-modal" id="apiModal">
   <div class="api-modal-box">
-    <h3>API ключ Anthropic</h3>
-    <p>Получи ключ на <strong>console.anthropic.com</strong> → API Keys → Create Key</p>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-api03-...">
+    <h3>🆓 Бесплатный API ключ Gemini</h3>
+    <p>
+      1. Открой <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a><br>
+      2. Нажми <strong>«Get API key»</strong><br>
+      3. Нажми <strong>«Create API key»</strong><br>
+      4. Скопируй и вставь сюда 👇
+    </p>
+    <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
     <div class="modal-btns">
       <button class="modal-cancel" onclick="closeApiModal()">Отмена</button>
       <button class="modal-delete" id="deleteKeyBtn" onclick="deleteApiKey()" style="display:none;">Удалить</button>
@@ -154,73 +160,57 @@
 </div>
 
 <script>
-const API_KEY_STORAGE = 'school_helper_api_key';
-let currentImageBase64 = null;
-let currentImageType = null;
+const STORAGE_KEY = 'school_gemini_key';
+let imgBase64 = null, imgType = null;
 
-function getApiKey() { return localStorage.getItem(API_KEY_STORAGE) || ''; }
+function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
 
 function openApiModal() {
-  const existing = getApiKey();
-  const input = document.getElementById('apiKeyInput');
-  const deleteBtn = document.getElementById('deleteKeyBtn');
-  // If key exists, show masked version and show delete button
-  if (existing) {
-    input.placeholder = existing.slice(0, 10) + '...' + existing.slice(-4);
-    input.value = '';
-    deleteBtn.style.display = 'block';
-  } else {
-    input.placeholder = 'sk-ant-api03-...';
-    input.value = '';
-    deleteBtn.style.display = 'none';
-  }
+  const existing = getKey();
+  const inp = document.getElementById('apiKeyInput');
+  const del = document.getElementById('deleteKeyBtn');
+  inp.value = '';
+  inp.placeholder = existing ? existing.slice(0,8) + '...' + existing.slice(-4) : 'AIzaSy...';
+  del.style.display = existing ? 'block' : 'none';
   document.getElementById('apiModal').classList.add('open');
-  setTimeout(() => input.focus(), 100);
+  setTimeout(() => inp.focus(), 100);
 }
 
 function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
 
 function saveApiKey() {
   const key = document.getElementById('apiKeyInput').value.trim();
-  if (!key) { closeApiModal(); return; } // nothing typed — just close
-  if (!key.startsWith('sk-')) { alert('Ключ должен начинаться с sk-'); return; }
-  localStorage.setItem(API_KEY_STORAGE, key);
+  if (!key) { closeApiModal(); return; }
+  if (!key.startsWith('AIza')) { alert('Ключ Gemini начинается с AIza...'); return; }
+  localStorage.setItem(STORAGE_KEY, key);
   closeApiModal();
   updateBanner();
 }
 
 function deleteApiKey() {
   if (confirm('Удалить API ключ?')) {
-    localStorage.removeItem(API_KEY_STORAGE);
+    localStorage.removeItem(STORAGE_KEY);
     closeApiModal();
     updateBanner();
   }
 }
 
 function updateBanner() {
-  const banner = document.getElementById('apiBanner');
-  const keyBtn = document.getElementById('keyBtn');
-  if (getApiKey()) {
-    banner.style.display = 'none';
-    keyBtn.textContent = '🔑 Сменить ключ';
-    keyBtn.classList.add('has-key');
-  } else {
-    banner.style.display = 'flex';
-    keyBtn.textContent = '🔑 API ключ';
-    keyBtn.classList.remove('has-key');
-  }
+  const haKey = !!getKey();
+  document.getElementById('apiBanner').style.display = haKey ? 'none' : 'flex';
+  document.getElementById('keyBtn').textContent = haKey ? '🔑 Сменить ключ' : '🔑 API ключ';
 }
 
 function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(ev) {
-    const dataUrl = ev.target.result;
-    currentImageType = file.type || 'image/jpeg';
-    currentImageBase64 = dataUrl.split(',')[1];
+  reader.onload = ev => {
+    const url = ev.target.result;
+    imgType = file.type || 'image/jpeg';
+    imgBase64 = url.split(',')[1];
     const zone = document.getElementById('uploadZone');
-    zone.innerHTML = `<img src="${dataUrl}" alt="задание">`;
+    zone.innerHTML = `<img src="${url}" alt="задание">`;
     zone.classList.add('has-image');
     zone.onclick = null;
     document.getElementById('solveBtn').disabled = false;
@@ -229,14 +219,13 @@ function handleFile(e) {
 }
 
 function show(id) {
-  ['screenUpload','screenLoading','screenResult','screenError'].forEach(s => {
-    document.getElementById(s).style.display = s === id ? 'block' : 'none';
-  });
+  ['screenUpload','screenLoading','screenResult','screenError'].forEach(s =>
+    document.getElementById(s).style.display = s === id ? 'block' : 'none'
+  );
 }
 
 function reset() {
-  currentImageBase64 = null;
-  currentImageType = null;
+  imgBase64 = null; imgType = null;
   const zone = document.getElementById('uploadZone');
   zone.innerHTML = `<div class="upload-icon-wrap">📷</div><p>Сфотографировать задание</p><span>или нажми чтобы выбрать фото</span>`;
   zone.classList.remove('has-image');
@@ -246,69 +235,52 @@ function reset() {
   show('screenUpload');
 }
 
-function buildGdzLinks(subject, taskText) {
-  const q = encodeURIComponent(taskText.slice(0, 80));
-  const subj = encodeURIComponent(subject);
-  return [
-    { icon: '📖', name: 'gdz.ru', desc: 'Поиск по ГДЗ', url: `https://gdz.ru/search/?search=${q}` },
-    { icon: '🔍', name: 'resheba.ru', desc: 'Решебник онлайн', url: `https://resheba.ru/search?q=${q}` },
-    { icon: '📝', name: 'Яндекс', desc: `Найти в ГДЗ: ${subject}`, url: `https://yandex.ru/search/?text=${subj}+ГДЗ+${q}` },
-  ];
-}
+function renderResult({ subject, grade, task, steps, answer }) {
+  const q = encodeURIComponent((task||'').slice(0, 80));
+  const subj = encodeURIComponent(subject||'');
 
-function renderResult(data) {
-  const { subject, grade, task, steps, answer } = data;
-  const links = buildGdzLinks(subject, task);
+  const stepsHtml = (steps||[]).map((s,i) =>
+    `<div class="step"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`
+  ).join('');
 
-  let stepsHtml = '';
-  if (Array.isArray(steps)) {
-    steps.forEach((s, i) => {
-      stepsHtml += `<div class="step"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`;
-    });
-  }
-
-  let gdz = '';
-  links.forEach(l => {
-    gdz += `<a class="gdz-link" href="${l.url}" target="_blank">
-      <span class="gdz-link-icon">${l.icon}</span>
-      <div class="gdz-link-text"><strong>${l.name}</strong><span>${l.desc}</span></div>
-      <span class="gdz-arrow">›</span>
-    </a>`;
-  });
+  const gdzHtml = [
+    { icon:'📖', name:'gdz.ru', desc:'Поиск по ГДЗ', url:`https://gdz.ru/search/?search=${q}` },
+    { icon:'🔍', name:'resheba.ru', desc:'Решебник онлайн', url:`https://resheba.ru/search?q=${q}` },
+    { icon:'📝', name:'Яндекс', desc:`ГДЗ: ${subject}`, url:`https://yandex.ru/search/?text=${subj}+ГДЗ+${q}` },
+  ].map(l => `<a class="gdz-link" href="${l.url}" target="_blank">
+    <span class="gdz-link-icon">${l.icon}</span>
+    <div class="gdz-link-text"><strong>${l.name}</strong><span>${l.desc}</span></div>
+    <span class="gdz-arrow">›</span>
+  </a>`).join('');
 
   document.getElementById('resultContent').innerHTML = `
     <div class="subject-row">
-      <span class="subject-badge">${subject}</span>
+      <span class="subject-badge">${subject||'Предмет'}</span>
       ${grade ? `<span class="class-badge">${grade} класс</span>` : ''}
     </div>
     <div class="task-box">
       <div class="task-label">Задание</div>
-      <div class="task-text">${task}</div>
+      <div class="task-text">${task||''}</div>
     </div>
     <div class="solution-title">📋 Решение</div>
     ${stepsHtml}
     ${answer ? `<div class="answer-box"><div class="answer-label">Ответ</div><div class="answer-text">${answer}</div></div>` : ''}
     <div class="divider"></div>
     <div class="gdz-section-title">🔗 Поиск в ГДЗ</div>
-    ${gdz}
+    ${gdzHtml}
   `;
 }
 
 async function solve() {
-  const apiKey = getApiKey();
-  if (!apiKey) { openApiModal(); return; }
-  if (!currentImageBase64) return;
+  const key = getKey();
+  if (!key) { openApiModal(); return; }
+  if (!imgBase64) return;
 
   show('screenLoading');
 
-  const prompt = `Ты помощник школьника. Внимательно посмотри на изображение с заданием.
+  const prompt = `Ты помощник школьника. Посмотри на изображение с заданием.
 
-Определи:
-1. Предмет (математика, русский язык, физика, химия, история, английский, биология, и т.д.)
-2. Класс обучения (если можно определить)
-3. Точный текст задания
-4. Пошаговое решение (каждый шаг отдельно, понятным языком для ребёнка)
-5. Итоговый ответ
+Определи предмет, класс, текст задания, пошаговое решение и ответ.
 
 Ответь СТРОГО в формате JSON (без markdown, без \`\`\`):
 {
@@ -320,42 +292,38 @@ async function solve() {
 }`;
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: currentImageType, data: currentImageBase64 } },
-            { type: 'text', text: prompt }
-          ]
-        }]
-      })
-    });
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [
+            { inline_data: { mime_type: imgType, data: imgBase64 } },
+            { text: prompt }
+          ]}],
+          generationConfig: { temperature: 0.2, maxOutputTokens: 1500 }
+        })
+      }
+    );
 
-    if (!response.ok) {
-      const err = await response.json();
+    if (!res.ok) {
+      const err = await res.json();
       throw new Error(err.error?.message || 'Ошибка API');
     }
 
-    const data = await response.json();
-    const text = data.content[0].text.trim();
-    const clean = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(clean);
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
+    if (!text) throw new Error('Пустой ответ от Gemini');
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
 
     show('screenResult');
     renderResult(parsed);
   } catch (err) {
     show('screenError');
-    document.getElementById('errorText').innerHTML = `<strong>Ошибка:</strong> ${err.message}<br><br>Проверь правильность API ключа и попробуй снова. <a style="color:#185FA5;cursor:pointer;" onclick="openApiModal()">Сменить ключ →</a>`;
+    document.getElementById('errorText').innerHTML =
+      `<strong>Ошибка:</strong> ${err.message}<br><br>
+       <a style="color:#185FA5;cursor:pointer;" onclick="openApiModal()">Сменить ключ →</a>`;
   }
 }
 
