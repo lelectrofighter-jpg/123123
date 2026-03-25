@@ -148,7 +148,7 @@
     <p>
       1. Зайдите на <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a><br>
       2. Нажмите <b>«Create API key»</b><br>
-      3. Вставьте его ниже:
+      3. Скопируйте его и вставьте ниже:
     </p>
     <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
     <div class="modal-btns">
@@ -160,7 +160,7 @@
 </div>
 
 <script>
-const STORAGE_KEY = 'school_gemini_key_v3'; // Обновили версию ключа для чистоты эксперимента
+const STORAGE_KEY = 'school_gemini_key_v4';
 let imgBase64 = null, imgType = 'image/jpeg';
 
 function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
@@ -230,7 +230,7 @@ async function handleFile(e) {
   const file = e.target.files[0];
   if (!file) return;
   const zone = document.getElementById('uploadZone');
-  zone.innerHTML = `<p>Сжатие...</p>`;
+  zone.innerHTML = `<p>Сжатие фото...</p>`;
   try {
     const resizedDataUrl = await resizeImage(file);
     imgBase64 = resizedDataUrl.split(',')[1];
@@ -262,58 +262,61 @@ async function solve() {
   
   show('screenLoading');
   const statusLabel = document.getElementById('loadingStatus');
-  statusLabel.innerText = "Идет запрос к ИИ...";
+  statusLabel.innerText = "Анализирую изображение...";
 
-  const prompt = `Ты репетитор. Реши задание с фото. Ответь в JSON:
-  {"subject":"предмет","grade":"класс","task":"текст","steps":["шаг 1","шаг 2"],"answer":"ответ"}`;
+  const prompt = `Ты школьный репетитор. Реши задание на картинке. 
+Верни результат СТРОГО в формате JSON без каких-либо пояснений до и после.
+Формат:
+{
+  "subject": "название предмета",
+  "grade": "класс",
+  "task": "текст задания",
+  "steps": ["шаг 1", "шаг 2"],
+  "answer": "короткий ответ"
+}`;
 
   try {
-    // Используем версию v1 вместо v1beta для стабильности
-    const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${key}`;
+    // Используем максимально надежный URL
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`;
     
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ inline_data: { mime_type: "image/jpeg", data: imgBase64 } }, { text: prompt }] }],
-        generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+        generationConfig: { 
+            temperature: 0.1,
+            maxOutputTokens: 2048
+        }
       })
     });
 
     const result = await response.json();
     if (!response.ok) {
-      // Если v1 не находит модель, попробуем v1beta обратно, но с правильным именем
-      if (response.status === 404) {
-         statusLabel.innerText = "Пробую альтернативный метод...";
-         const fallbackUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${key}`;
-         const fbRes = await fetch(fallbackUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ inline_data: { mime_type: "image/jpeg", data: imgBase64 } }, { text: prompt }] }],
-                generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
-            })
-         });
-         const fbResult = await fbRes.json();
-         if (!fbRes.ok) throw new Error(fbResult.error?.message || 'Ошибка API');
-         const data = JSON.parse(fbResult.candidates[0].content.parts[0].text);
-         renderResult(data);
-         show('screenResult');
-         return;
-      }
       throw new Error(result.error?.message || 'Ошибка API');
     }
 
-    const data = JSON.parse(result.candidates[0].content.parts[0].text);
+    let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!rawText) throw new Error('ИИ не смог распознать фото. Попробуйте сделать снимок четче.');
+
+    // Поиск JSON в ответе (на случай если нейросеть добавила лишнее)
+    const jsonStart = rawText.indexOf('{');
+    const jsonEnd = rawText.lastIndexOf('}') + 1;
+    if (jsonStart === -1 || jsonEnd === -1) throw new Error('Ошибка формата ответа');
+    
+    const cleanJson = rawText.slice(jsonStart, jsonEnd);
+    const data = JSON.parse(cleanJson);
+    
     renderResult(data);
     show('screenResult');
 
   } catch (err) {
+    console.error(err);
     show('screenError');
     document.getElementById('errorText').innerHTML = `
       <strong>Ошибка</strong>
       ${err.message}<br><br>
-      <small>Если видите "not found", попробуйте создать новый API ключ в AI Studio.</small>
+      <small>Если видите "API key not found", попробуйте пересоздать ключ в AI Studio или проверьте настройки.</small>
     `;
   }
 }
