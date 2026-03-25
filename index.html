@@ -1,343 +1,109 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Помощник школьника</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
-  .app { max-width: 480px; margin: 0 auto; padding: 0 0 2rem; min-height: 100vh; background: #fff; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-
-  .header { background: #185FA5; color: #fff; padding: 1.2rem 1.25rem; display: flex; align-items: center; gap: 10px; }
-  .header-left { display: flex; align-items: center; gap: 10px; flex: 1; }
-  .header h1 { font-size: 18px; font-weight: 600; }
-  .header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
-  .header-icon { width: 36px; height: 36px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-
-  .key-btn { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; white-space: nowrap; transition: background 0.2s; flex-shrink: 0; }
-  .key-btn:hover { background: rgba(255,255,255,0.25); }
-
-  .api-banner { background: #FFF3CD; border-bottom: 1px solid #FFD700; padding: 10px 1.25rem; font-size: 13px; color: #856404; display: flex; align-items: center; gap: 8px; }
-  .api-banner a { color: #185FA5; cursor: pointer; text-decoration: underline; font-weight: bold; }
-
-  .free-badge { background: #EAF3DE; border-bottom: 1px solid #C0DD97; padding: 8px 1.25rem; font-size: 12px; color: #27500A; text-align: center; }
-
-  .content { padding: 1.25rem; }
-
-  .upload-zone { border: 2px dashed #B5D4F4; border-radius: 16px; padding: 2.5rem 1rem; text-align: center; cursor: pointer; background: #E6F1FB; margin-bottom: 1.5rem; transition: all 0.2s; overflow: hidden; }
-  .upload-zone:hover { border-color: #185FA5; background: #d4e8f7; }
-  .upload-zone.has-image { border-style: solid; padding: 0; background: #000; }
-  .upload-zone img { width: 100%; border-radius: 14px; display: block; max-height: 350px; object-fit: contain; }
-  .upload-icon-wrap { font-size: 44px; margin-bottom: 12px; }
-  .upload-zone p { font-size: 16px; color: #185FA5; font-weight: 600; }
-  .upload-zone span { font-size: 13px; color: #378ADD; display: block; margin-top: 6px; }
-  #fileInput { display: none; }
-
-  .btn { width: 100%; padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-primary { background: #185FA5; color: #fff; box-shadow: 0 4px 12px rgba(24, 95, 165, 0.2); }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-primary:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-  .btn-secondary { background: #f0f0f0; color: #333; margin-top: 12px; }
-
-  .loading { text-align: center; padding: 3rem 1rem; }
-  .spinner { width: 48px; height: 48px; border: 4px solid #E6F1FB; border-top-color: #185FA5; border-radius: 50%; animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite; margin: 0 auto 20px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading p { font-size: 16px; color: #333; font-weight: 500; }
-  .loading span { font-size: 13px; color: #888; margin-top: 8px; display: block; }
-
-  .subject-row { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-  .subject-badge { background: #185FA5; color: #fff; font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 20px; }
-  .class-badge { background: #EAF3DE; color: #27500A; font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 20px; }
-
-  .task-box { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-bottom: 20px; }
-  .task-label { font-size: 11px; color: #64748B; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; font-weight: 700; }
-  .task-text { font-size: 15px; color: #1E293B; line-height: 1.6; }
-
-  .solution-title { font-size: 17px; font-weight: 700; color: #0F172A; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-  .step { display: flex; gap: 14px; margin-bottom: 18px; }
-  .step-num { min-width: 28px; height: 28px; background: #185FA5; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-  .step-text { font-size: 15px; color: #334155; line-height: 1.6; }
-
-  .answer-box { background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 12px; padding: 16px; margin: 20px 0; }
-  .answer-label { font-size: 11px; color: #166534; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
-  .answer-text { font-size: 17px; font-weight: 700; color: #14532D; }
-
-  .divider { height: 1px; background: #E2E8F0; margin: 24px 0; }
-  .gdz-section-title { font-size: 14px; font-weight: 700; color: #64748B; margin-bottom: 12px; text-transform: uppercase; }
-  .gdz-link { display: flex; align-items: center; gap: 12px; padding: 14px; background: #fff; border: 1px solid #E2E8F0; border-radius: 12px; margin-bottom: 10px; text-decoration: none; color: inherit; transition: all 0.2s; }
-  .gdz-link:hover { border-color: #185FA5; background: #F8FAFC; transform: translateY(-2px); }
-  .gdz-link-icon { font-size: 24px; }
-  .gdz-link-text { flex: 1; }
-  .gdz-link-text strong { font-size: 15px; color: #185FA5; display: block; }
-  .gdz-link-text span { font-size: 12px; color: #64748B; }
-
-  .error-box { background: #FFF1F2; border: 1px solid #FECDD3; border-radius: 12px; padding: 16px; color: #BE123C; font-size: 14px; line-height: 1.6; margin-top: 1rem; word-break: break-word; }
-  .error-box strong { display: block; margin-bottom: 4px; font-size: 16px; }
-
-  .api-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); z-index: 100; align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px); }
-  .api-modal.open { display: flex; }
-  .api-modal-box { background: #fff; border-radius: 20px; padding: 1.75rem; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
-  .api-modal-box h3 { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: #0F172A; }
-  .api-modal-box p { font-size: 14px; color: #475569; margin-bottom: 18px; line-height: 1.6; }
-  .api-modal-box a { color: #185FA5; font-weight: 700; text-decoration: none; }
-  .api-modal-box input { width: 100%; padding: 14px; border: 2px solid #E2E8F0; border-radius: 12px; font-size: 15px; font-family: monospace; margin-bottom: 16px; transition: border-color 0.2s; }
-  .api-modal-box input:focus { outline: none; border-color: #185FA5; }
-  .modal-btns { display: flex; gap: 10px; }
-  .modal-btns button { flex: 1; padding: 12px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
-  .modal-cancel { background: #F1F5F9; color: #475569; }
-  .modal-save { background: #185FA5; color: #fff; }
-  .modal-clear { background: #FFF1F2; color: #BE123C; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Помощник 3.1</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 20px auto; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        button { background: #4285f4; color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
+        button:disabled { background: #ccc; }
+        #status { margin-top: 15px; color: #555; font-style: italic; }
+        #result { margin-top: 20px; padding: 15px; background: #eef; border-radius: 8px; white-space: pre-wrap; line-height: 1.5; border-left: 5px solid #4285f4; }
+        img { max-width: 100%; border-radius: 8px; margin-top: 10px; display: none; }
+    </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <div class="header-left">
-      <div class="header-icon">🎓</div>
-      <div>
-        <h1>Школьный Помощник</h1>
-        <p>ИИ решение задач по фото</p>
-      </div>
-    </div>
-    <button class="key-btn" id="keyBtn" onclick="openApiModal()">⚙️</button>
-  </div>
 
-  <div class="free-badge">Используется умная модель Google Gemini 2.0 Flash</div>
-
-  <div class="api-banner" id="apiBanner">
-    ⚠️ Ключ не настроен. <a onclick="openApiModal()">Добавить ключ</a>
-  </div>
-
-  <div class="content">
-    <div id="screenUpload">
-      <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleFile(event)">
-      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
-        <div class="upload-icon-wrap">📸</div>
-        <p>Загрузить фото задания</p>
-        <span>Нажмите сюда или сделайте снимок</span>
-      </div>
-      <button class="btn btn-primary" id="solveBtn" onclick="solve()" disabled>
-        ✨ Решить задание
-      </button>
-    </div>
-
-    <div id="screenLoading" style="display:none;">
-      <div class="loading">
-        <div class="spinner"></div>
-        <p>Изучаю ваше задание...</p>
-        <span id="loadingStatus">Обработка данных...</span>
-      </div>
-    </div>
-
-    <div id="screenResult" style="display:none;">
-      <div id="resultContent"></div>
-      <button class="btn btn-secondary" onclick="reset()">← Другое задание</button>
-    </div>
-
-    <div id="screenError" style="display:none;">
-      <div class="error-box" id="errorText"></div>
-      <button class="btn btn-secondary" style="margin-top:16px;" onclick="reset()">← Попробовать еще раз</button>
-    </div>
-  </div>
-</div>
-
-<div class="api-modal" id="apiModal">
-  <div class="api-modal-box">
-    <h3>Настройка API ключа</h3>
-    <p>
-      1. Зайдите на <a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio</a><br>
-      2. Нажмите <b>«Create API key»</b><br>
-      3. Скопируйте его и вставьте ниже:
-    </p>
-    <input type="password" id="apiKeyInput" placeholder="AIzaSy...">
-    <div class="modal-btns">
-      <button class="modal-cancel" onclick="closeApiModal()">Отмена</button>
-      <button class="modal-clear" onclick="clearApiKey()">Очистить</button>
-      <button class="modal-save" onclick="saveApiKey()">Сохранить</button>
-    </div>
-  </div>
+<div class="card">
+    <h2>Решала задач 3.1 Flash Lite</h2>
+    <input type="file" id="fileInput" accept="image/*">
+    <img id="preview" src="#" alt="Предпросмотр">
+    <button id="solveBtn">РЕШИТЬ ЗАДАЧУ</button>
+    
+    <div id="status">Готов к работе</div>
+    <div id="result">Здесь будет решение...</div>
 </div>
 
 <script>
-const STORAGE_KEY = 'school_gemini_key_v6';
-let imgBase64 = null, imgType = 'image/jpeg';
+    // --- НАСТРОЙКИ ---
+    const API_KEY = "ТВОЙ_КЛЮЧ_ИЗ_КОЛАБА"; 
+    const MODEL_NAME = "gemini-3.1-flash-lite"; // Если будет ошибка "Model not found", пробуй "models/gemini-3.1-flash-lite"
 
-function getKey() { return localStorage.getItem(STORAGE_KEY) || ''; }
+    const fileInput = document.getElementById('fileInput');
+    const solveBtn = document.getElementById('solveBtn');
+    const status = document.getElementById('status');
+    const resultDiv = document.getElementById('result');
+    const preview = document.getElementById('preview');
 
-function openApiModal() {
-  const existing = getKey();
-  const inp = document.getElementById('apiKeyInput');
-  inp.value = '';
-  inp.placeholder = existing ? 'Ключ уже сохранен' : 'Вставьте ключ сюда';
-  document.getElementById('apiModal').classList.add('open');
-}
-
-function closeApiModal() { document.getElementById('apiModal').classList.remove('open'); }
-
-function clearApiKey() {
-  if (confirm('Удалить сохраненный ключ?')) {
-    localStorage.removeItem(STORAGE_KEY);
-    updateBanner();
-    closeApiModal();
-  }
-}
-
-function saveApiKey() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) {
-    if (!key.startsWith('AIza')) {
-      alert('Это не похоже на ключ Gemini. Он должен начинаться с AIza...');
-      return;
-    }
-    localStorage.setItem(STORAGE_KEY, key);
-  }
-  closeApiModal();
-  updateBanner();
-}
-
-function updateBanner() {
-  const hasKey = !!getKey();
-  document.getElementById('apiBanner').style.display = hasKey ? 'none' : 'flex';
-  document.getElementById('keyBtn').textContent = hasKey ? '⚙️' : '🔑';
-}
-
-async function resizeImage(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width, height = img.height, maxDim = 1200;
-        if (width > height) {
-          if (width > maxDim) { height *= maxDim / width; width = maxDim; }
-        } else {
-          if (height > maxDim) { width *= maxDim / height; height = maxDim; }
+    // Показываем превью картинки
+    fileInput.onchange = evt => {
+        const [file] = fileInput.files;
+        if (file) {
+            preview.src = URL.createObjectURL(file);
+            preview.style.display = 'block';
         }
-        canvas.width = width; canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.7));
-      };
-      img.src = e.target.result;
+    }
+
+    // Главная функция отправки
+    solveBtn.onclick = async () => {
+        if (!fileInput.files[0]) return alert("Сначала выбери фото!");
+
+        solveBtn.disabled = true;
+        status.innerText = "🚀 Gemini 3.1 думает...";
+        resultDiv.innerText = "";
+
+        try {
+            const base64Image = await toBase64(fileInput.files[0]);
+            const cleanBase64 = base64Image.split(',')[1];
+
+            // Важно: используем v1beta для новых моделей
+            const url = https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY};
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: "Ты — эксперт в решении задач. Посмотри на фото, распознай текст и дай максимально подробное решение с финальным ответом." },
+                            { inline_data: { mime_type: "image/jpeg", data: cleanBase64 } }
+                        ]
+                    }]
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Ошибка API:", data.error);
+                status.innerText = "❌ Ошибка: " + data.error.message;
+            } else if (data.candidates && data.candidates[0].content) {
+                const text = data.candidates[0].content.parts[0].text;
+                resultDiv.innerText = text;
+                status.innerText = "✅ Решение готово!";
+            } else {
+                status.innerText = "⚠️ ИИ не смог дать ответ. Попробуй другое фото.";
+            }
+
+        } catch (err) {
+            console.error("Критический сбой:", err);
+            status.innerText = "🚨 Ошибка сети. Проверь консоль (F12).";
+        } finally {
+            solveBtn.disabled = false;
+        }
     };
-    reader.readAsDataURL(file);
-  });
-}
-
-async function handleFile(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const zone = document.getElementById('uploadZone');
-  zone.innerHTML = `<p>Сжатие фото...</p>`;
-  try {
-    const resizedDataUrl = await resizeImage(file);
-    imgBase64 = resizedDataUrl.split(',')[1];
-    zone.innerHTML = `<img src="${resizedDataUrl}" alt="Preview">`;
-    zone.classList.add('has-image');
-    document.getElementById('solveBtn').disabled = false;
-  } catch (err) { alert('Ошибка фото: ' + err.message); reset(); }
-}
-
-function show(id) {
-  ['screenUpload','screenLoading','screenResult','screenError'].forEach(s =>
-    document.getElementById(s).style.display = s === id ? 'block' : 'none'
-  );
-}
-
-function reset() {
-  imgBase64 = null;
-  const zone = document.getElementById('uploadZone');
-  zone.innerHTML = `<div class="upload-icon-wrap">📸</div><p>Загрузить фото задания</p><span>Нажмите сюда или сделайте снимок</span>`;
-  zone.classList.remove('has-image');
-  document.getElementById('fileInput').value = '';
-  document.getElementById('solveBtn').disabled = true;
-  show('screenUpload');
-}
-
-async function solve() {
-  const key = getKey();
-  if (!key) { openApiModal(); return; }
-  
-  show('screenLoading');
-  const statusLabel = document.getElementById('loadingStatus');
-  statusLabel.innerText = "Анализирую изображение (модель 2.0)...";
-
-  const prompt = `Ты школьный репетитор. Реши задание на картинке. 
-Верни результат СТРОГО в формате JSON без каких-либо пояснений до и после.
-Формат:
-{
-  "subject": "название предмета",
-  "grade": "класс",
-  "task": "текст задания",
-  "steps": ["шаг 1", "шаг 2"],
-  "answer": "короткий ответ"
-}`;
-
-  try {
-    // ВЕРНУЛИСЬ НА GEMINI 2.0 FLASH! Она точно работала у тебя изначально.
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`;
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ inline_data: { mime_type: "image/jpeg", data: imgBase64 } }, { text: prompt }] }],
-        generationConfig: { 
-            temperature: 0.1,
-            // Этот параметр решает ту самую первую проблему с JSON форматом
-            responseMimeType: "application/json"
-        }
-      })
-    });
-
-    const result = await response.json();
-    if (!response.ok) {
-      // Выводим только реальную ошибку, никаких "проверьте интернет"
-      throw new Error(result.error?.message || 'Ошибка API');
+// Конвертер в Base64
+    function toBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
     }
-
-    let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!rawText) throw new Error('ИИ не смог распознать фото. Попробуйте сделать снимок четче.');
-
-    const data = JSON.parse(rawText);
-    
-    renderResult(data);
-    show('screenResult');
-
-  } catch (err) {
-    console.error(err);
-    show('screenError');
-    document.getElementById('errorText').innerHTML = `
-      <strong>Ошибка API:</strong><br>
-      ${err.message}
-    `;
-  }
-}
-
-function renderResult(data) {
-  const stepsHtml = (data.steps || []).map((s, i) => `<div class="step"><div class="step-num">${i+1}</div><div class="step-text">${s}</div></div>`).join('');
-  const query = encodeURIComponent(data.task?.slice(0, 100) || '');
-  
-  document.getElementById('resultContent').innerHTML = `
-    <div class="subject-row">
-      <span class="subject-badge">${data.subject || 'Задание'}</span>
-      ${data.grade ? `<span class="class-badge">${data.grade} класс</span>` : ''}
-    </div>
-    <div class="task-box"><div class="task-label">Текст</div><div class="task-text">${data.task || '...'}</div></div>
-    <div class="solution-title">📝 Решение</div>
-    ${stepsHtml}
-    <div class="answer-box"><div class="answer-label">Ответ</div><div class="answer-text">${data.answer || 'Готово'}</div></div>
-    <div class="divider"></div>
-    <a href="https://www.google.com/search?q=ГДЗ+${query}" target="_blank" class="gdz-link">
-      <span class="gdz-link-icon">🔍</span>
-      <div class="gdz-link-text"><strong>Поиск в Google</strong><span>Найти аналогичные задания</span></div>
-    </a>
-  `;
-}
-
-updateBanner();
 </script>
+
 </body>
 </html>
